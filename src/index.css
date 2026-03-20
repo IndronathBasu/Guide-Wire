@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-brand-blue: #0969da;
+  --color-brand-hover: #0353a4;
+  --color-canvas-default: #f6f8fa;
+  --color-border-default: #d0d7de;
+  --color-border-muted: #e1e4e8;
+  --color-fg-default: #24292f;
+  --color-fg-muted: #57606a;
+  
+  --color-success: #2da44e;
+  --color-danger: #cf222e;
+  --color-warning: #bf8700;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    font-family: var(--font-sans);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(var(--color-border-muted) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -12px -12px;
+  }
+}
+
+@layer utilities {
+  .tech-border {
+    border: 1px solid var(--color-border-default);
+  }
+  .tech-shadow {
+    box-shadow: 0 1px 3px rgba(31,35,40,0.12), 0 1px 2px rgba(31,35,40,0.06);
+  }
+  .tech-text-muted {
+    color: var(--color-fg-muted);
+  }
+}
