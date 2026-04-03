@@ -1,1250 +1,502 @@
-# InsureGig: AI-Powered Parametric Income Protection for Q-Commerce Delivery Partners
+# 🚀 Aegesis Phase 2 Execution & Integration Plan
 
-> **Building the fastest, fairest insurance for India's last-mile heroes.**
-
-**Status:** Phase 1 - Research & Ideation (March 4-20, 2025)  
-**Target Launch:** Phase 2 - MVP (Weeks 7-12, 2025)  
-**Challenge:** Market Crash - Detecting coordinated 500-person fraud rings while protecting honest workers
+This document outlines everything needed to execute the Phase 2 Minimum Viable Product (MVP) for the **Guidewire DEVTrails** hackathon. Aegesis is an **AI-Powered Parametric Insurance Platform** built exclusively for **Quick Commerce (Q-Commerce) 2-wheeler delivery partners** (Zepto / Blinkit). It is structured to allow a seamless upgrade into the commercial product described in the **Final Startup Roadmap** (Month 1 - 3).
 
 ---
 
-## 1. THE PROBLEM: Why Delivery Partners Need This
+## 🏗️ 1. Tech Stack (Phase 2 MVP vs. Production Upgrade)
 
-### The Income Reality
+We are selecting an MVP tech stack that maps perfectly 1-to-1 with your final Day 90 startup stack, ensuring no throwaway code.
 
-India's quick-commerce (q-commerce) revolution—Blinkit, Zepto, Amazon minutes—has created unprecedented speed. But it's built on a gig workforce exposed to forces completely outside their control.
-
-**Income Volatility:**
-```
-Earnings Profile of Full-Time Delivery Partner
-├─ Good Day (32 orders, 11 hrs): ₹1,202
-├─ Normal Day (28 orders, 15 hrs): ₹763
-└─ Slow Day (20 orders, 10 hrs): ₹450
-
-Weekly Range: ₹2,800 - ₹4,500
-Monthly Range: ₹14,000 - ₹18,000 (gross, before fuel)
-```
-
-**External Shocks That Stop Everything:**
-
-When it rains heavily, when heat exceeds 42°C, when platforms crash, or when curfews close zones—delivery partners lose 20-30% of monthly earnings **with zero safety net**.
-
-Traditional insurance? Useless.
-- Claim processing: 30 days
-- Approval rate: 40% (60% rejected due to bureaucracy)
-- Medical/accident focus (not income loss)
-
-**The Gap:** ₹0 protection for income loss from external disruptions.
+| Component | Phase 2 MVP (Now) | Startup Roadmap Upgrade Path (Day 31+) |
+| :--- | :--- | :--- |
+| **Frontend** | **React Native (Expo)** - Fast prototyping | **React Native (Bare Workflow)** - Native Swift/Kotlin for Aadhaar eKYC |
+| **Backend** | **Python FastAPI** - Async speed, ML ready | **Dockerized FastAPI** on Kubernetes (AWS EKS) |
+| **Database** | **SQLite** - Local, zero-config, portable | **Amazon RDS (PostgreSQL + PostGIS)** for massive geospatial scale |
+| **AI / ML** | **Scikit-Learn (Local)** - 3 Python ML pipelines | **AWS SageMaker** - Nightly batch jobs & live inference |
+| **Event Stream** | **FastAPI Background Tasks** | **Redis Streams (Amazon ElastiCache)** - Non-blocking queues |
 
 ---
 
-## 2. OUR SOLUTION: InsureGig
+## 📐 2. End-to-End System Architecture
 
-### The Core Idea
+This outlines the complete architecture, visualizing how data flows from the Q-commerce rider's pocket, through security boundaries, into our 3 AI models, and out to their Razorpay wallet.
 
-**Parametric Insurance:** Instead of waiting 30 days for claim assessment, we **instantly pay** when external data confirms disruption.
+```mermaid
+flowchart TD
+    %% END USER LAYER (Q-Commerce Rider App)
+    subgraph UI ["📱 1. Client Access Layer (React Native)"]
+        RiderApp["🏇 Q-Commerce Rider App"]
+        BackgroundGPS["📍 Background GPS Service (Continuous)"]
+        Biometric["🔐 Simulated KYC & Hub Assignment"]
+    end
 
-- **Real-time:** Event occurs → 5 minutes → Money in bank
-- **Automatic:** No paperwork, no claims forms
-- **Transparent:** Algorithm decides, no human judgment required
-- **Affordable:** 1-2% of weekly earnings (₹29-89/week)
+    %% INGESTION & GATEWAY LAYER
+    subgraph Gateway ["🚪 2. Ingestion & API Gateway"]
+        Auth["🔑 JWT API Security"]
+        Webhook["⚓ FastAPI Webhook Receiver"]
+        API["⚡ FastAPI REST Endpoints"]
+    end
 
-### How It Works (30-Second Version)
+    %% EXTERNAL PLUGINS (Data Sources) - Category A & B Triggers
+    subgraph External ["🌍 3. External API Oracles (4 Triggers)"]
+        IMD_Rain["🌧️ IMD Severe Weather API (Cat A)"]
+        IMD_Heat["🔥 IMD Extreme Heat API (Cat A)"]
+        News["📰 News Sentiment NLP (Cat B)"]
+        Platform["📱 Q-Commerce App Suspension Oracle (Cat B)"]
+    end
 
+    %% REAL-TIME EVENT STREAMING
+    subgraph Events ["🔄 4. Event Streaming"]
+        GPSStream["📡 Continuous Location Topic"]
+        DisruptionStream["⛈️ Disruption Alert Topic"]
+        DPDTStream["📊 DPDT Tracker (Weekly Behavioral)"]
+    end
+
+    %% STATE MANAGEMENT (Database)
+    subgraph Storage ["🗄️ 5. Persistent Storage & Grids"]
+        GeoDB["🗺️ Geospatial Grid DB (Haversine 2.5km Radius)"]
+        Ledger["📜 Policy, Claims & DPDT Ledger"]
+        WageDB["💰 Historical Hourly Wage Store"]
+    end
+
+    %% MACHINE LEARNING LAYER (3 AI Models)
+    subgraph Intelligence ["🧠 6. ML Inference Engines (3 Models)"]
+        Model1["📈 Model 1: Dynamic Premium Engine"]
+        Model2["💸 Model 2: Payout Calculator"]
+        Model3["🛡️ Model 3: Fraud Defense (Isolation Forest)"]
+    end
+
+    %% EXECUTION LAYER
+    subgraph Execution ["⚡ 7. Parametric Execution & Settlement"]
+        CoverageFilter["📊 Dynamic Coverage % Filter"]
+        Razorpay["💸 Razorpay UPI Payout"]
+    end
+
+    %% --- Connections ---
+
+    %% Client to Gateway
+    RiderApp -->|1. Sign-Up, Hub Assignment & Policy Fetch| API
+    BackgroundGPS -.->|2. Async Encrypted Location Pings| Auth
+    Biometric -->|Simulated KYC Binding| Auth
+
+    %% Gateway Routing
+    Auth --> Webhook & API
+    Webhook -->|3. Route Trigger Payloads| DisruptionStream
+    API -->|Read/Write Rider Data| Ledger
+
+    %% External APIs Feeding the System
+    IMD_Rain & IMD_Heat -->|7-Day Forecast (Cat A)| Model1
+    News & Platform -->|Socio-Political Forecast (Cat B)| Model1
+    External -.->|Live Trigger Webhook POST| Webhook
+
+    %% GPS & DPDT Tracking
+    Auth -->|Push Verified Lats/Longs| GPSStream
+    GPSStream -->|Update Last Known Location| GeoDB
+    GPSStream -->|Track Active Deliveries During Triggers| DPDTStream
+    DPDTStream -->|Weekly DPDT % Recalculation| Ledger
+
+    %% Model 1: Subscription Pricing (Every Monday)
+    Ledger -->|Rider Zone + DPDT History| Model1
+    Model1 -->|Calculate Weekly Premium e.g. ₹84| API
+
+    %% Trigger → Model 2 → Model 3 → Payout
+    DisruptionStream -->|4. Trigger Fires: Match Riders in 2.5km Radius| GeoDB
+    GeoDB -->|5. Eligible Riders Found| Model2
+    WageDB -->|Historical Hourly Wage for Day/Time| Model2
+    Model2 -->|Base Income Loss Calculated| Model3
+
+    %% Model 3: Fraud Gate
+    GPSStream -->|Measure Max Distance Jump < 1km| Model3
+    Model3 -->|6A. Valid Score < 0.6 = APPROVED| CoverageFilter
+    Model3 -->|6B. Anomaly > 0.6 = FREEZE| Gateway
+
+    %% Coverage % & Settlement
+    CoverageFilter -->|7. Apply Zone Coverage (50/45/35%)| Razorpay
+    Razorpay -.->|Receipt to Ledger| Ledger
+    Razorpay -.->|8. Instant Push Notification| RiderApp
+
+    %% Colors
+    classDef mobile fill:#e1bee7,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef gate fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef ext fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    classDef stream fill:#ffecb3,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef db fill:#cfd8dc,stroke:#263238,stroke-width:2px,color:#000
+    classDef ai fill:#f8bbd0,stroke:#880e4f,stroke-width:2px,color:#000
+    classDef exec fill:#ffe0b2,stroke:#e65100,stroke-width:2px,color:#000
+
+    class UI mobile
+    class Gateway gate
+    class External ext
+    class Events stream
+    class Storage db
+    class Intelligence ai
+    class Execution exec
 ```
-9:15 AM: Heavy rain starts in your zone
-9:20 AM: IMD confirms 50mm rainfall
-9:22 AM: Our system verifies:
-         ✓ You're in the affected zone (GPS)
-         ✓ You tried to work (app login)
-         ✓ Demand dropped (fewer orders)
-9:25 AM: ₹500 hits your UPI account
-```
 
-**Why This Works for Delivery Partners:**
-- No savings buffer → Need money immediately, not in 30 days
-- Can't afford gaps → Live paycheck-to-paycheck
-- Trust technology → Already use Swiggy/Blinkit apps
-- Value fairness → Want automatic, unbiased decisions
+### MVP Simulation Context
+
+For the immediate Phase 2 executable codebase, this architecture simulates the following async flows:
+1. **Client Device:** React Native app posts rider registration, hub assignment, and continuous GPS to the backend.
+2. **API Layer:** FastAPI receives requests (simulating the future API Gateway).
+3. **Trigger Simulation:** FastAPI exposes secure mock Webhook endpoints for all 4 triggers (IMD Rain, IMD Heat, News NLP, Platform Suspension).
+4. **Geospatial Verification:** SQLite + Haversine formula handles the 2.5km radius logic (simulating PostGIS).
+5. **DPDT Tracking:** Background task recalculates each rider's Delivery Percentage During Triggers weekly.
+6. **Wallet Settlement:** Virtual wallet updates replace live Razorpay API calls for the 2-minute demo.
+
+*Upgrade Note:* By using `async def` endpoints in FastAPI from Day 1, integrating Redis Streams in Month 2 will be a pure plug-and-play operation.
 
 ---
 
-## 3. YOUR PERSONA: Meet Rohan & Priya
+## 🔗 3. The Three AI Models & API Connectivity Architecture
 
-### Primary: Rohan Kumar (Full-Time Delivery Partner)
+This section details the direct data flow between the external plugins and the 3 core ML engines.
 
+```mermaid
+graph TD
+    %% External Plugins Layer - 4 Triggers
+    subgraph AL["External API Plugins (4 Automated Triggers)"]
+        subgraph CatA["Category A: Environmental"]
+            IMD_Rain["🌧️ IMD Severe Weather (>60mm Rain)"]
+            IMD_Heat["🔥 IMD Extreme Heat (>45°C)"]
+        end
+        subgraph CatB["Category B: Socio-Political & Platform"]
+            News["📰 News NLP (Strikes/Protests)"]
+            AppOracle["📱 Zepto/Blinkit App Suspension Oracle"]
+        end
+    end
+
+    %% API Gateway Layer
+    Gateway["⚡ FastAPI Webhooks / Gateway"]
+    AL --> Gateway
+
+    %% Feature Processing Layer
+    subgraph PL["Pipeline & Feature Enrichment"]
+        GPS["📡 GPS Stream + DPDT Tracker"]
+        SQLite["🗄️ SQLite (Rider Geofence + Wage + DPDT Ledger)"]
+    end
+
+    Gateway --> GPS
+    GPS -.-> SQLite
+    SQLite -.-> GPS
+
+    %% Machine Learning Engines Layer - 3 Models
+    subgraph ML["Machine Learning Inference Engines (3 Models)"]
+        M1["📈 Model 1: Dynamic Premium Engine"]
+        M2["💸 Model 2: Payout Calculator"]  
+        M3["🛡️ Model 3: Fraud Defense (Isolation Forest)"]
+    end
+
+    %% Execution & Financial Layer
+    subgraph EL["Execution & Settlement"]
+        Coverage["📊 Dynamic Coverage % Filter (50/45/35%)"]
+        Razorpay["💸 Razorpay UPI Payout"]
+    end
+
+    %% Model 1 Connections (Pre-Event: Weekly Pricing)
+    CatA -->|7-Day Forecast → predictive_environmental_risk| M1
+    CatB -->|Strike/Outage Forecast → predictive_sociopolitical_risk| M1
+    SQLite -->|historical_zone_risk_score + dpdt_pct| M1
+    M1 -->|Weekly Premium e.g. ₹84| SQLite
+
+    %% Model 2 Connections (Post-Event: Payout Calc)
+    Gateway -->|Live Trigger Payload with Epicenter Coords| M2
+    SQLite -->|Rider GPS within 2.5km Haversine + Historical Hourly Wage| M2
+    M2 -->|Base Income Loss * Severity| M3
+
+    %% Model 3 Connections (Security Gate)
+    GPS -->|Rider GPS Ping < 1km Jump + Device Meta| M3
+    M3 -->|Valid Score < 0.6 → APPROVED| Coverage
+    M3 -->|Anomaly > 0.6 → FREEZE HACKERS| Gateway
+
+    %% Payout Execution
+    Coverage -->|Apply Zone Coverage %| Razorpay
+    Razorpay -->|₹126 Credited to UPI| SQLite
+
+    %% Styling
+    classDef api fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef ml fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef core fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+
+    class IMD_Rain,IMD_Heat,News,AppOracle api
+    class M1,M2,M3 ml
+    class Gateway,GPS,SQLite,Coverage,Razorpay core
 ```
-Profile:
-├─ Age: 28 years old
-├─ Status: Full-time delivery (6-7 days/week)
-├─ Location: Bangalore (covers 3-4 zones)
-├─ Monthly Earnings: ₹16,000 (net)
-│  ├─ Fuel Cost: -₹4,000
-│  ├─ Bike Maintenance: -₹500
-│  └─ Net Income: ₹11,500
-├─ Device: Redmi Note 10 (always on)
-├─ Goals: Earn ₹15,000/month, save ₹2,000/month
-└─ Pain: June monsoon loses ₹3,000 in income
 
-Why He Needs InsureGig:
-  "When it rains, I lose 1/3 of my daily earnings. I can't take
-   a ₹3,000 hit in monsoon. Your insurance costs ₹49/week but 
-   protects ₹2,500 of income. It's a no-brainer."
-```
+### The Three AI Models (Summary)
 
-### Secondary: Priya Singh (Part-Time Delivery Partner)
+| # | Model Name | When It Runs | Input | Output | Formula |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | Dynamic Premium Engine | Every Monday (Pre-Event) | Zone Risk, Environmental Forecast, Socio-Political Forecast, DPDT % | Weekly Premium (₹) | `Subtotal + [(100-DPDT)% × Subtotal]` |
+| **2** | Payout Calculator | On Trigger Fire (Post-Event) | Hourly Wage, Duration, Severity, Zone Coverage % | Instant Payout (₹) | `(Wage × Hours × Severity) × Coverage%` |
+| **3** | Fraud Defense | Before Every Payout | GPS Displacement, Device Meta, IP Clusters | Allow / Freeze (Boolean) | Isolation Forest Anomaly Score |
 
-```
-Profile:
-├─ Age: 35 years old
-├─ Status: Part-time (4-5 days/week, household responsibilities)
-├─ Location: Mumbai (2 zones)
-├─ Weekly Earnings: ₹2,000 (supplementary income)
-├─ Current Role: Primary caregiver, education bills to pay
-├─ Device: Oppo A15 (shared phone)
-├─ Goals: Add ₹8,000/month to household, flexibility
-└─ Pain: Can't risk missing a single week's ₹2,000
+### The Four Connectivity Bridges
 
-Why She Needs InsureGig:
-  "I can't afford to lose a week. My daughter's school fees 
-   are due. If I pay ₹29/week and get ₹1,000 back on a bad 
-   week, that saves me from a crisis."
-```
+1. **The Pricing Bridge (Model 1 ↔ Forecast APIs):** Controls the flow of money *into* the pool. Model 1 fetches 7-day historical weather and socio-political risk aggregates from the **IMD + News plugins** and combines it with the rider's `historical_zone_risk_score` and `dpdt_pct` to output a dynamic weekly premium.
+2. **The Verification Bridge (Trigger APIs → Geospatial Filter → Model 2):** When any of the 4 triggers fire, the system first runs a **Haversine distance check** (2.5km radius) against the trigger epicenter to identify only the Q-commerce riders who are actually affected. Model 2 then calculates the exact loss of income for each eligible rider.
+3. **The Defense Bridge (Model 3 ↔ GPS Streams):** Protects money flowing *out*. The embedded `Scikit-Learn Isolation Forest` calculates an anomaly score using real-time GPS displacement (ensuring max jump remains < 1 km), 48-hour account age locks, and IP subnet clustering. A high score halts the payout.
+4. **The Sustainability Bridge (Coverage % Filter):** After Model 3 approves a payout, the system applies a zone-based coverage cap (🟢 50%, 🟠 45%, 🔴 35%) to protect the ₹6.45 Cr liquidity pool from catastrophic Red Zone mass-payout events.
 
 ---
 
-## 4. WORKFLOW: The User Journey
+## 🔌 4. API Integration Flow
 
-### Week 1: Onboarding (< 5 mins)
+This specifies how we build the mock API data ingestion layer for the MVP so that it naturally unplugs to accept live data later.
 
-```
-1. Sign up via Blinkit/Zepto driver community channel
-   ├─ Phone number verification
-   ├─ KYC (Aadhaar, bank account)
-   ├─ Platform ID linking (Blinkit/Zepto account)
-   └─ Device fingerprint creation
+### 1. Webhook Endpoints (Simulating 4 Push Triggers)
+FastAPI exposes secure mock endpoints that simulate external APIs "pushing" disruption alerts:
 
-2. Choose plan
-   ├─ Basic: ₹29/week → ₹200/day protection
-   ├─ Standard: ₹49/week → ₹500/day protection (MOST POPULAR)
-   └─ Pro: ₹89/week → ₹800/day protection
+| # | Endpoint | Trigger Type | Category |
+| :--- | :--- | :--- | :--- |
+| 1 | `/api/v1/webhooks/imd-weather` | Severe Rain / Flash Flood Alert | Cat A: Environmental |
+| 2 | `/api/v1/webhooks/imd-heat` | Extreme Heatwave (>45°C) | Cat A: Environmental |
+| 3 | `/api/v1/webhooks/news-disruption` | Transport Strike / Protest | Cat B: Socio-Political |
+| 4 | `/api/v1/webhooks/platform-status` | Zepto/Blinkit App Suspension | Cat B: Platform |
 
-3. Pay first week
-   ├─ UPI (Razorpay) or bank transfer
-   └─ Instant activation
-
-Status: READY FOR CLAIMS ✓
-```
-
-### Week 2-4: Normal Operations
-
-```
-Day 1-5: Work normally
-  - App sends push notifications
-  - Dashboard shows weekly earnings
-  - Alerts for upcoming monsoon/heat forecasts
-
-Day 6: Light Rain (15mm/hour)
-  - At 10:30 AM: Weather alert sent
-  - Our system verifies disruption:
-    ✓ IMD confirms 15mm/hour rainfall
-    ✓ Your GPS in affected zone
-    ✓ Your order volume dropped 25%
-  - At 10:35 AM: ₹500 claim APPROVED
-  - At 10:37 AM: ₹500 in your bank account
-  - Notification: "Disruption protection ₹500 → Bank account"
-
-Day 7: Review payout
-  - Dashboard shows: "June: ₹49 premium, ₹500 claim payout"
-  - ROI: 10x return in first week
-
-Status: PAID FOR DISRUPTION ✓
+### 2. JSON Payload Contracts
+The backend expects precise JSON payloads to trigger Model 2. For example, the simulated **IMD Severe Weather Payload**:
+```json
+{
+  "source": "imd_weather_api",
+  "trigger_type": "SEVERE_FLOOD",
+  "category": "ENVIRONMENTAL",
+  "geo_fence": {
+    "center_lat": 12.9121,
+    "center_long": 77.6446,
+    "radius_km": 2.5
+  },
+  "severity_multiplier": 1.0,
+  "estimated_duration_hours": 3.5,
+  "timestamp": "2026-03-31T18:00:00Z"
+}
 ```
 
-### Month 2+: Recurring Claims
-
+The simulated **Zepto App Suspension Payload** (The "Killer Feature"):
+```json
+{
+  "source": "zepto_platform_oracle",
+  "trigger_type": "APP_SUSPENSION",
+  "category": "PLATFORM",
+  "geo_fence": {
+    "center_lat": 12.9352,
+    "center_long": 77.6245,
+    "radius_km": 5.0
+  },
+  "severity_multiplier": 1.2,
+  "estimated_duration_hours": 2.0,
+  "affected_pincode": "560034",
+  "timestamp": "2026-03-31T20:30:00Z"
+}
 ```
-June Monsoon Period: 20 rainy days expected
 
-Claims Pattern:
-├─ June 5: Heavy rain → ₹500 payout (cumulative: ₹500)
-├─ June 12: Light rain → ₹300 payout (cumulative: ₹800)
-├─ June 18: Extreme heat → ₹400 payout (cumulative: ₹1,200)
-└─ June 25: Platform outage → ₹250 payout (cumulative: ₹1,450)
-
-Total Premium Paid: ₹196 (4 weeks × ₹49)
-Total Payouts: ₹1,450
-
-NET GAIN: ₹1,254 (738% ROI)
-
-Status: MONSOON PROTECTED ✓
-```
+### 3. Integration Path
+1. **MVP Execution:** You click a "Trigger Flood" or "Simulate App Suspension" button on the UI, which POSTs the JSON to the FastAPI webhook.
+2. **Post-MVP Upgrade:** These mock endpoints get deleted, and the exact same JSON schemas are mapped to deployed Redis streams listening to live IMD, News, and Platform feeds.
 
 ---
 
-## 5. THE THREE PARAMETRIC TRIGGERS
+## 📂 5. File Structure
 
-### Why Only 3?
+This is the exact directory structure for the Phase 2 source code executable, mapped entirely to the End-to-End architecture above:
 
-We evaluated 17+ possible triggers. We selected these 3 because they:
-1. **Clear causation:** Event → directly reduces income (no guessing)
-2. **Verifiable data:** Independent third-party sources (no platform bias)
-3. **Low fraud risk:** Hard to game, high confidence scores
-4. **High frequency:** Happen regularly (1-5 times/month), not rare
-5. **Meaningful payouts:** Worth the premium
-
-We **excluded:**
-- ❌ AQI (platforms don't halt; high fraud risk)
-- ❌ Health triggers (outside scope; vehicle repair)
-- ❌ Platform data triggers (proprietary; fraud-vulnerable)
-
----
-
-### TRIGGER #1: Rain Intensity (Slippage Risk)
-
-**Threshold:** >15mm/hour for 2+ consecutive hours
-
-**Why This:**
-- Rainfall at 15mm/hour increases 2-wheeler skidding accidents by 300%
-- Delivery speeds drop from 25km/h to 10km/h
-- Customer demand decreases (people shelter indoors)
-- **Income impact:** 20-35% daily loss
-
-**Data Source:** 
-- IMD (India Meteorological Department) ← Primary
-- OpenWeatherMap API ← Backup
-- Skymet Weather ← Verification
-
-**How It Works:**
-```
-Timeline:
-10:15 AM: Rain starts
-10:20 AM: IMD reports 16mm/hour rainfall (>15 threshold)
-10:22 AM: System cross-checks with OpenWeatherMap ✓ CONFIRMED
-10:24 AM: Verify your zone (GPS location) ✓ IN AFFECTED AREA
-10:26 AM: Check your app activity
-         ✓ LOGIN ATTEMPT at 10:16 AM
-         ✓ ORDERS RECEIVED: 8 offers (normal 12)
-         ✓ CANCELLATION RATE: 60% (normal 15%)
-10:28 AM: Confidence score = 0.87
-         DECISION: AUTO-APPROVE ✓
-10:30 AM: ₹500 payout initiated
-10:35 AM: ₹500 in your bank account
-```
-
-**Payout by Plan:**
-```
-Basic Plan (₹29/week):
-  - Trigger fires → ₹300 payout
-  - Covers ~60% of lost income (15-25%)
-
-Standard Plan (₹49/week):
-  - Trigger fires → ₹500 payout
-  - Covers ~100% of lost income (20-35%)
-  - RECOMMENDED ← Most popular
-
-Pro Plan (₹89/week):
-  - Trigger fires → ₹800 payout
-  - Covers ~150% of lost income + extra buffer
-```
-
----
-
-### TRIGGER #2: Extreme Heat Index (RealFeel Temperature)
-
-**Threshold:** RealFeel >44°C for 2+ consecutive hours
-
-**Why RealFeel (Not Raw Temperature):**
-```
-Raw Temperature: 42°C (IMD shows)
-BUT:
-+ Humidity: 70%
-+ Wind: 0 km/h
-+ Sun reflection from asphalt
-= RealFeel: 47°C (What your body actually feels)
-
-This is MORE REALISTIC than raw temp.
-It explains why delivery slows at 42°C in humid areas,
-but 45°C in coastal breeze might be okay.
-```
-
-**Why This:**
-- RealFeel >44°C is medically recognized as "dangerous heat stress"
-- Customer demand drops 20-25% (everyone stays home)
-- Platform algorithms may reduce order frequency in extreme heat
-- Rider physical stress reduces speed and efficiency
-- **Income impact:** 15-25% daily loss
-
-**Data Source:**
-- IMD RealFeel index
-- Skymet Weather API
-- OpenWeatherMap feels-like temperature
-
-**Cities Most Affected:**
-```
-Tier 1 (High frequency):
-├─ Delhi: 25-30 days/year >44°C RealFeel
-├─ Jaipur: 35-40 days/year
-└─ Lucknow: 20-25 days/year
-
-Tier 2 (Moderate frequency):
-├─ Indore: 15-20 days/year
-├─ Nagpur: 12-18 days/year
-└─ Ahmednagar: 10-15 days/year
-
-Tier 3 (Low frequency):
-├─ Mumbai: 5-8 days/year (coastal breeze)
-├─ Bangalore: 2-3 days/year (altitude/climate)
-└─ Kolkata: 8-12 days/year (monsoon offset)
-```
-
-**Payout by Plan:**
-```
-Same as Rain Trigger
-├─ Basic: ₹300
-├─ Standard: ₹500
-└─ Pro: ₹800
-```
-
----
-
-### TRIGGER #3: Platform Outage (Tech Disruption)
-
-**Threshold:** Platform server downtime >30 minutes (verified API status)
-
-**Why This:**
-- If platform is down, riders cannot receive orders
-- **Income impact:** 30-50% (if during peak hours)
-- **Frequency:** 2-4 major incidents/year; minor incidents weekly
-- **Zero basis risk:** Binary verification (system up or down)
-
-**Data Source:**
-- CloudWatch (Blinkit/Zepto internal monitoring)
-- DownDetector.com (public API status page)
-- Platform status page directly
-
-**How Detection Works:**
-```
-Timeline (Hypothetical Incident):
-
-2:00 PM: Blinkit servers start failing
-2:05 PM: Riders report "App not opening" on Twitter
-2:08 PM: DownDetector shows 10,000+ reports
-2:10 PM: CloudWatch (backend API) returns 503 errors
-2:12 PM: Our monitoring detects: API errors for 12 consecutive minutes
-2:14 PM: System cross-checks with DownDetector ✓ CONFIRMED
-2:16 PM: Query platform API: "How many orders placed in Delhi?"
-         Answer: ZERO (normal: 500+ per minute)
-
-Confidence Score Calculation:
-├─ IMD confirms? N/A (not weather)
-├─ Platform down for >30 mins? YES ✓ (+0.4)
-├─ No orders in system? YES ✓ (+0.3)
-├─ Multiple rider reports? YES ✓ (+0.2)
-└─ Total Score: 0.90 (HIGH CONFIDENCE)
-
-2:18 PM: Decision: AUTO-APPROVE ✓
-2:20 PM: ₹500 payout initiated
-2:25 PM: ₹500 in your bank account
-```
-
-**Real-World Examples (Verified):**
-```
-June 2024: Zepto app crash
-  Duration: 45 minutes
-  Impact: 30% of Delhi riders lost 1 hour of work
-  Our payout: ₹500 per affected rider
-
-January 2025: Blinkit server slowdown
-  Duration: 1.5 hours (>30 min threshold)
-  Impact: Orders delayed 10-20 minutes
-  Our payout: ₹500 per affected rider
-```
-
-**Payout by Plan:**
-```
-Basic: ₹250 (partial—outages are rare)
-Standard: ₹500
-Pro: ₹750 (+ 24-hour support priority)
-```
-
----
-
-## 6. WEEKLY PREMIUM MODEL: The Math
-
-### Formula: Weekly Premium = B × Z × S × A
-
-```
-B = Base Rate (protection level)
-Z = Zone Risk Factor (geography—floods/traffic)
-S = Seasonal Factor (weather season)
-A = AI Risk Multiplier (your behavior/history)
+```text
+aegesis_phase2/
+├── backend/
+│   ├── main.py                          # Primary FastAPI Gateway Entry
+│   ├── api/
+│   │   └── v1/
+│   │       ├── webhooks.py              # Mock payload receivers for all 4 triggers
+│   │       │                            #   - /imd-weather (Cat A: Rain/Flood)
+│   │       │                            #   - /imd-heat (Cat A: Extreme Heat)
+│   │       │                            #   - /news-disruption (Cat B: Strikes/Protests)
+│   │       │                            #   - /platform-status (Cat B: Zepto/Blinkit Suspension)
+│   │       ├── policies.py              # Policy fetching, creation & weekly premium display
+│   │       ├── rider.py                 # JWT Auth, Hub Assignment & GPS stream receivers
+│   │       └── premium.py               # Endpoint to fetch Model 1 dynamic premium for a rider
+│   ├── core/
+│   │   ├── execution_engine.py          # Model 2 Payout Logic + Coverage % Filter + Razorpay
+│   │   ├── geospatial.py               # Haversine distance calculator (2.5km radius check)
+│   │   ├── dpdt_tracker.py             # DPDT calculation engine (weekly recalculation)
+│   │   ├── stream_processor.py          # Simulating the Redis Streams event queues
+│   │   └── config.py                    # Application configuration & constants
+│   ├── database/
+│   │   ├── session.py                   # SQLite logic (simulating PostgreSQL + PostGIS)
+│   │   ├── models.py                    # Rider, Policy, Claim Ledger, DPDT History, GPS Log,
+│   │   │                                #   Wage History, Zone Assignment tables
+│   │   └── crud.py                      # Core Reads/Writes for all tables
+│   ├── ml_pipelines/
+│   │   ├── model_1_premium.py           # AI Model 1: Dynamic Subscription Premium Calculator
+│   │   │                                #   Inputs: zone_risk, env_risk, sociopol_risk, dpdt_pct
+│   │   │                                #   Output: weekly_premium_inr (e.g. ₹84.00)
+│   │   ├── model_2_payout.py            # AI Model 2: Actionable Payout Engine
+│   │   │                                #   Inputs: hourly_wage, duration, severity, coverage%
+│   │   │                                #   Output: settlement_payout_inr (e.g. ₹126.00)
+│   │   └── model_3_fraud.py             # AI Model 3: Isolation Forest Fraud Defense
+│   │                                    #   Inputs: GPS displacement, device meta, IP clusters
+│   │                                    #   Output: anomaly_score (float), allow/freeze (bool)
+│   ├── mock_data/
+│   │   ├── trigger_payloads.json        # Pre-built JSON payloads for all 4 trigger types
+│   │   ├── rider_profiles.json          # Sample Q-commerce rider profiles with wage history
+│   │   └── zone_grid.json              # Predefined Green/Orange/Red zone grid coordinates
+│   └── requirements.txt                 # Python dependencies
+│
+└── frontend/
+    ├── App.js                           # React Native entry point & screen navigator
+    ├── services/
+    │   ├── api.js                       # Axios/Fetch wrapper for all backend API calls
+    │   └── BackgroundLocation.js        # Async Foreground/Background silent GPS tracker
+    ├── screens/
+    │   ├── OnboardingScreen.js          # Simulated KYC, Hub Assignment & Zone Selection
+    │   ├── ShieldDashboard.js           # Main Dashboard: Zone indicator, AI premium display,
+    │   │                                #   DPDT score, Coverage %, and trigger simulation buttons
+    │   ├── PremiumBreakdownScreen.js    # [NEW] Detailed Model 1 breakdown showing:
+    │   │                                #   Base ₹60 + Zone Penalty + DPDT Correction = Final ₹
+    │   ├── TriggerStatusScreen.js       # [NEW] Live feed of active/past triggers with:
+    │   │                                #   Trigger type, epicenter map pin, 2.5km radius visual,
+    │   │                                #   affected rider count, and real-time payout status
+    │   ├── SettlementScreen.js          # Payout confirmation: Amount, Coverage % applied,
+    │   │                                #   Trigger type, Duration, and UPI credit animation
+    │   └── FraudAlertScreen.js          # [NEW] Model 3 visualization: Shows blocked syndicate
+    │                                    #   attacks, GPS teleportation detection, anomaly scores
+    ├── components/
+    │   ├── GlassCard.js                 # Glassmorphism floating card container
+    │   ├── AnimatedButton.js            # Gradient button with spring press animation
+    │   ├── CustomModal.js               # Dark blurred alert modal
+    │   ├── ZoneBadge.js                 # [NEW] Color-coded zone indicator (Green/Orange/Red)
+    │   ├── DPDTMeter.js                 # [NEW] Circular progress meter showing rider's DPDT %
+    │   └── CoverageBar.js              # [NEW] Visual bar showing Coverage % for active zone
+    ├── theme/
+    │   └── colors.js                    # Centralized Q-Commerce color palette
+    └── package.json                     # React Native dependencies
 ```
 
 ---
 
-### Three-Tier Pricing
+## 🧠 6. AI Plan — Model 1: Dynamic Premium Engine
 
-#### BASIC PLAN: ₹29/week
+> **Detailed specification:** See [`ai_model_1_spec.md`](./ai_model_1_spec.md)
 
+**Phase 2 Goal:** Demonstrate mathematical, hyper-local weekly pricing for Q-Commerce riders.
+
+### The Formula
 ```
-For: Part-time workers, casual riders, budget-conscious
-├─ Weekly Premium: ₹29
-├─ Daily Protection: ₹200 per trigger event
-├─ Max Weekly Payout: ₹1,000 (max 5 events)
-├─ Suitable For:
-│  ├─ Earnings: ₹2,000-3,000/week
-│  ├─ Experience: New (0-6 months)
-│  ├─ Risk: HIGH cancellation rate
-│  └─ Example: Priya (part-time)
-└─ ROI: Break-even at first disruption
-
-Monthly Cost: ₹116 (4 weeks)
-Typical Monthly Payout: ₹600-1,000 (5-8 events)
-ROI: 500-800%
+Subtotal = Base Premium (₹60) + Zone Penalty (₹0 / ₹24 / ₹45)
+Final Weekly Premium = Subtotal + [ (100% - DPDT%) × Subtotal ]
 ```
 
-#### STANDARD PLAN: ₹49/week ← RECOMMENDED
+### Input Features
+| # | Feature | Type | Source |
+| :--- | :--- | :--- | :--- |
+| 1 | `historical_zone_risk_score` | Float (0.0 - 1.0) | PostGIS / SQLite grid analysis |
+| 2 | `predictive_environmental_risk` | Float (0.0 - 1.0) | IMD Weather API (Cat A forecast) |
+| 3 | `predictive_sociopolitical_risk` | Float (0.0 - 1.0) | News NLP + Platform Oracle (Cat B forecast) |
+| 4 | `dpdt_pct` | Float (0.0 - 100.0) | Weekly recalculated behavioral metric |
 
-```
-For: Full-time riders, stable earners, most people
-├─ Weekly Premium: ₹49
-├─ Daily Protection: ₹500 per trigger event
-├─ Max Weekly Payout: ₹2,500 (max 5 events)
-├─ Suitable For:
-│  ├─ Earnings: ₹3,500-4,500/week
-│  ├─ Experience: Moderate (6-18 months)
-│  ├─ Risk: Normal (4.3-4.6 rating)
-│  └─ Example: Rohan (full-time)
-└─ ROI: 10x on one disruption claim
+### Zone Classification
+| Zone | Condition | Penalty |
+| :--- | :--- | :--- |
+| 🟢 Green | Clear forecast + safe grid | +₹0 |
+| 🟠 Orange | Moderate risk (heat/rain/isolated protests) | +₹24 |
+| 🔴 Red | Severe floods, city-wide strikes, app suspensions expected | +₹45 |
 
-Monthly Cost: ₹196 (4 weeks)
-Typical Monthly Payout: ₹1,000-1,500 (2-3 events)
-ROI: 500-700%
-```
+### DPDT (Delivery Percentage During Triggers)
+The unique behavioral metric that rewards hardworking riders:
+* **Recalculated every week** — riders get a fresh chance to improve their score.
+* A rider with **100% DPDT** pays the bare minimum (e.g., ₹84 for Orange Zone).
+* A rider with **20% DPDT** pays significantly more (e.g., ₹151.20 for Orange Zone).
+* **Formula:** `DPDT Penalty = (100% - DPDT%) × Subtotal`
 
-#### PRO PLAN: ₹89/week
-
-```
-For: Elite riders, high earners, maximum protection
-├─ Weekly Premium: ₹89
-├─ Daily Protection: ₹800 per trigger event
-├─ Max Weekly Payout: ₹4,000 (max 5 events)
-├─ BONUS Features:
-│  ├─ Priority support (24-hour dispute resolution)
-│  ├─ Auto-claims (no action needed)
-│  ├─ Dispute guarantee (wrong rejections refunded)
-│  └─ Monsoon pass (unlimited payouts in June-Sept)
-├─ Suitable For:
-│  ├─ Earnings: ₹4,500-6,000+/week
-│  ├─ Experience: Senior (18+ months)
-│  ├─ Risk: LOW (>4.6 rating, 95%+ acceptance)
-│  └─ Example: Elite riders
-└─ ROI: 9x on single disruption
-
-Monthly Cost: ₹356 (4 weeks)
-Typical Monthly Payout: ₹1,600-2,400 (2-3 events)
-ROI: 400-550%
-```
+### Example Calculations
+| Rider | Zone | DPDT | Subtotal | Penalty | Final Premium |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Rider A (Hustler) | 🟠 Orange | 100% | ₹84 | ₹0 | **₹84.00** |
+| Rider B (Average) | 🟠 Orange | 80% | ₹84 | ₹16.80 | **₹100.80** |
+| Rider C (Fair-Weather) | 🟠 Orange | 20% | ₹84 | ₹67.20 | **₹151.20** |
+| Rider D (Red Zone Hustler) | 🔴 Red | 90% | ₹105 | ₹10.50 | **₹115.50** |
 
 ---
 
-### Variable Premium Adjustment
+## 💸 7. AI Plan — Model 2: Payout Calculator
 
-#### Zone Risk Factor (Z):
+> **Detailed specification:** See [`ai_model_2_spec.md`](./ai_model_2_spec.md)
 
+**Phase 2 Goal:** Demonstrate zero-touch, income-based parametric payouts with geospatial precision.
+
+### The Formula
 ```
-Safe Zones (0.8x discount):
-  - Peripheral residential areas
-  - Low flood history
-  - Good road infrastructure
-  - Example: Bangalore suburbs
-  
-Normal Zones (1.0x baseline):
-  - Standard delivery areas
-  - Moderate risk
-  - Example: Central Mumbai
-  
-High-Risk Zones (1.4x premium):
-  - Flood-prone areas (near rivers)
-  - Traffic congestion hotspots
-  - Poor drainage infrastructure
-  - Example: South Delhi (Yamuna floodplain)
+Base Income Loss = (Historical Hourly Wage × Disruption Duration) × Severity Multiplier
+Final Payout = Base Income Loss × Coverage Percentage
 ```
 
-#### Seasonal Factor (S):
+### The 4 Automated Triggers
+| # | Trigger | Category | Threshold |
+| :--- | :--- | :--- | :--- |
+| 1 | IMD Severe Weather | Cat A: Environmental | > 60mm continuous rain or flash flood |
+| 2 | IMD Extreme Heat | Cat A: Environmental | > 45°C urban temperature |
+| 3 | News Sentiment NLP | Cat B: Socio-Political | "Transport Strike" / "Road Blockade" / "Protests" |
+| 4 | Q-Commerce App Suspension | Cat B: Platform | Zepto/Blinkit orders suspended in a pincode |
 
-```
-Off-Season (0.9x discount):
-  - October-March: Safe, dry weather
-  - Lower disruption frequency
-  
-Normal Season (1.0x baseline):
-  - Regular disruptions
-  - Typical weather patterns
-  
-Monsoon (1.3x premium):
-  - June-September: High rainfall
-  - Increased income disruption
-  - Covered by premium adjustment
-  
-Extreme Heat (1.2x premium):
-  - April-May (summer peak)
-  - December-January (cold in North)
-```
+### Geospatial Eligibility Filter (The 2.5km Radius)
+When a trigger fires, **we do not pay everyone in the zone.** The system executes a Haversine distance check:
+* Only riders whose GPS pings are within **2.5 km** of the disruption epicenter are eligible.
+* Q-Commerce riders operate from fixed Dark Stores (Hubs), making this radius constraint extremely accurate.
+* Exception: `APP_SUSPENSION_ORACLE` triggers may affect an entire pincode.
 
-#### AI Risk Multiplier (A):
+### Dynamic Coverage % (Sustainability Filter)
+To protect the ₹6.45 Cr liquidity fund:
+| Zone | Coverage % | Reason |
+| :--- | :--- | :--- |
+| 🟢 Green | **50%** | Low volume of simultaneous claims |
+| 🟠 Orange | **45%** | Moderate claim density expected |
+| 🔴 Red | **35%** | Catastrophic events affect thousands; must cap exposure |
 
-```
-Excellent (0.85x discount):
-  - Rating: 4.6+/5.0
-  - Acceptance rate: 95%+
-  - Cancellation rate: <5%
-  - Status: LOW RISK
-  → Pays 15% less premium
-  
-Good (0.95x baseline):
-  - Rating: 4.3-4.5
-  - Acceptance rate: 90%+
-  - Cancellation rate: 5-10%
-  - Status: NORMAL RISK
-  → Pays regular premium
-  
-Average (1.05x premium):
-  - Rating: 4.0-4.2
-  - Acceptance rate: 80-90%
-  - Cancellation rate: 10-15%
-  - Status: MODERATE RISK
-  → Pays 5% more
-  
-Poor (1.3x premium):
-  - Rating: <4.0
-  - Acceptance rate: <80%
-  - Cancellation rate: >15%
-  - Status: HIGH RISK
-  → Pays 30% more (or maybe not approved)
-```
+### Example Calculations
+| Rider | Hourly Wage | Duration | Severity | Base Loss | Zone | Coverage | **Final Payout** |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Rider A | ₹150/hr (Fri 8PM) | 3 hrs | 1.0x (Flood) | ₹450 | 🔴 Red | 35% | **₹157.50** |
+| Rider B | ₹80/hr (Tue 11AM) | 3 hrs | 1.0x (Flood) | ₹240 | 🔴 Red | 35% | **₹84.00** |
+| Rider C | ₹120/hr (Wed 6PM) | 2 hrs | 1.2x (Strike) | ₹288 | 🟠 Orange | 45% | **₹129.60** |
+| Rider D | ₹100/hr (Mon 2PM) | 4 hrs | 1.5x (App Down) | ₹600 | 🟢 Green | 50% | **₹300.00** |
 
 ---
 
-### Real Premium Examples
+## 🛡️ 8. AI Plan — Model 3: Fraud Defense (Market Crash Engine)
 
-#### Example A: Rohan (Mumbai, Monsoon)
+**Phase 2 Goal:** Prove mathematically that the ₹6.45 Cr liquidity pool is safe from exploitation.
 
-```
-Base Plan: Standard (₹49/week)
-├─ Base Rate (B): ₹49
-├─ Zone Factor (Z): 1.2x (coastal, monsoon-prone)
-├─ Seasonal Factor (S): 1.3x (June monsoon)
-├─ AI Factor (A): 0.95x (rating 4.5, normal)
-└─ Calculation: ₹49 × 1.2 × 1.3 × 0.95 = ₹72.40
+This is the crown jewel of Aegesis. The Phase 2 MVP must implement these three defense layers:
 
-Rohan pays: ₹72/week
-Breakdown:
-  Regular: ₹49
-  Zone adjustment: +₹12 (coastal)
-  Monsoon adjustment: +₹20 (June-Sept)
-  AI adjustment: -₹9 (good rating)
+### Defense Layer 1: GPS Displacement Engine
+* **Rule:** Must block teleportation.
+* **MVP Code:** Verify that time elapsed and distance jumped do not exceed physical capabilities. Maximum jump radius threshold is strictly **1 km** to detect hyper-local anomalies.
 
-Annual Cost (if monsoon adjustment 4 months): 
-  Non-monsoon: ₹49 × 48 = ₹2,352
-  Monsoon: ₹72 × 4 = ₹288
-  Total: ₹2,640
+### Defense Layer 2: The 48-Hour Immutable Time Lock
+* **Rule:** You cannot buy a policy today and claim it today.
+* **MVP Code:** Enforce a boolean in the SQLite DB that hard-rejects any payout if `account_age_hours < 48`.
 
-Annual Expected Payouts: ₹8,000-10,000 (rain triggers 2-3x/month)
-ROI: 300-380%
-```
+### Defense Layer 3: Graph-Clustering IP Defense (The Syndicate Stop)
+* **Rule:** Prevent 500 fake emulators from claiming simultaneously.
+* **MVP Code:** When a trigger fires, parse the claim objects grouped by simulated IP subnets. If `count > N` per subnet, immediately flag and freeze the transaction cluster via the `model_3_fraud.py` Isolation Forest logic.
 
-#### Example B: Priya (Delhi, Basic Plan)
-
-```
-Base Plan: Basic (₹29/week)
-├─ Base Rate (B): ₹29
-├─ Zone Factor (Z): 1.1x (moderate flood risk)
-├─ Seasonal Factor (S): 0.9x (winter—safe season)
-├─ AI Factor (A): 1.05x (rating 4.2, new)
-└─ Calculation: ₹29 × 1.1 × 0.9 × 1.05 = ₹30.23
-
-Priya pays: ₹30/week (off-season)
-             ₹39/week (monsoon months)
-
-Typical Pattern:
-  Oct-May (8 months): ₹30 × 32 weeks = ₹960
-  Jun-Sept (4 months): ₹39 × 16 weeks = ₹624
-  Total Annual: ₹1,584
-
-Annual Expected Payouts: ₹2,400-3,600
-ROI: 150-230%
-```
+### Model 3 Output
+| Anomaly Score | Decision | Action |
+| :--- | :--- | :--- |
+| < 0.6 | ✅ **APPROVED** | Payout proceeds to Coverage % Filter → Razorpay |
+| ≥ 0.6 | 🚨 **FROZEN** | Transaction blocked, rider flagged for manual review |
 
 ---
 
-## 7. FRAUD DETECTION: The "Market Crash" Challenge
-
-### The Scenario
-
-500 coordinated fraudsters simultaneously claim disruption using fake GPS during a real rain event.
-
-**Their Attack:**
-```
-9:00 AM: Real rain in Bangalore (50mm)
-9:15 AM: 100 honest riders claim ✓ (legitimate)
-9:15 AM: 500 fraudsters submit claims simultaneously
-         - Spoof GPS to rain zone
-         - New accounts (2 days old)
-         - All pay via same bank
-         - All from same IP ranges
-9:20 AM: System processes 600 claims
-```
-
-**Our Defense: 5-Layer Multi-Dimensional Verification**
-
----
-
-### LAYER 1: Device Fingerprinting
-
-```
-What It Does:
-  Creates unique digital signature for each phone
-  (CPU type, RAM, OS version, device ID, MAC address, apps installed)
-
-Detection:
-  ├─ Fraudsters use rented phones with identical specs
-  ├─ System detects: 200+ phones with near-identical fingerprints
-  ├─ Confidence impact: -0.4 per claim
-  └─ All 500 fraudsters flagged: confidence = 0.45 (below threshold)
-
-Why It Works:
-  - GPS can be spoofed
-  - Device fingerprint CANNOT be spoofed (would need physical device)
-  - Each fraudster limited to max 2-3 claims before caught
-```
-
----
-
-### LAYER 2: Behavioral Anomaly Detection
-
-```
-Machine Learning: Isolation Forest (scikit-learn)
-
-Input Features:
-  ├─ Days since account creation (fraudsters: 2, honest: 180)
-  ├─ Deviation from normal working hours
-  ├─ Distance from usual delivery zones
-  ├─ GPS accuracy (poor GPS = suspension)
-  ├─ Cancellation rate jump
-  ├─ Time between account creation and claim
-  └─ Device changes (new phone = suspicious)
-
-Output:
-  Anomaly Score: 0-1 (0 = normal, 1 = outlier)
-  
-  Honest worker: 0.15 (low anomaly) → confidence += 0.2
-  Fraudster: 0.92 (high anomaly) → confidence -= 0.4
-
-Detection:
-  ├─ All 500 fraudsters: Created <3 days ago
-  ├─ All 500: First claim within hours of signup
-  ├─ Isolation Forest: anomaly_score = 0.92 (clear outliers)
-  └─ Result: All flagged for review
-```
-
----
-
-### LAYER 3: Platform API Integration
-
-```
-What It Verifies:
-  1. Did worker attempt to login during disruption?
-  2. Did platform offer them orders during rain?
-  3. Did they accept/reject orders (proving they tried)?
-  4. Are they working on competitor app? (moral hazard)
-
-Detection:
-  400 of 500 fraudsters:
-    ├─ Zero login attempts (were offline entire time)
-    ├─ GPS shows home location, not delivery zone
-    ├─ No orders offered (weren't in zone)
-    └─ Result: confidence = -0.25 → AUTO-REJECT
-
-  100 of 500 fraudsters (more sophisticated):
-    ├─ Spoofed login (faked app activity)
-    ├─ BUT: Later logs show they worked on Swiggy 3-5 PM
-    │     (during rain claim)
-    └─ Result: Moral hazard detected → confidence = -0.5 → REJECT
-```
-
----
-
-### LAYER 4: Spatial Clustering Analysis
-
-```
-Algorithm: DBSCAN (Density-Based Spatial Clustering)
-
-Legitimate Event:
-  ├─ Rain in Bangalore Zone A
-  ├─ 100 riders claim from 2km radius
-  ├─ Cluster density: Normal (50-80 per 2km²)
-  ├─ All devices within 20km of GPS location
-  └─ Result: APPROVE ALL 100
-
-Fraudster Attack:
-  ├─ 500 claims all from "Zone A" (GPS spoofed)
-  ├─ BUT device history shows:
-  │    Device A: Last location Delhi (1000km away)
-  │    Device B: Last location Mumbai (500km away)
-  │    Device C: Last location Hyderabad (600km away)
-  ├─ Haversine distance check:
-  │    GPS says: Zone A, Bangalore
-  │    Device says: Last known location = outside city
-  │    Distance = impossible in 15 minutes
-  └─ Result: 450/500 devices show impossible distance → REJECT
-
-Confidence Impact:
-  Distance > 50km gap: confidence -= 0.6
-  All 500 fraudsters: GPS vs device mismatch → confidence < 0.40 → REJECT
-```
-
----
-
-### LAYER 5: Network Analysis
-
-```
-Detects fraud rings through relationship mapping
-
-Red Flags:
-  1. Temporal Clustering
-     Honest workers: Claims over 2-3 hours (staggered)
-     Fraudsters: All 500 claims within 5 minutes (synchronized)
-     
-  2. Device Similarity
-     Honest: Each person owns 1-2 phones (variety)
-     Fraudsters: 450 similar device fingerprints (factory phones)
-     
-  3. IP Clustering
-     Honest: Claims from home, delivery zones, random cities
-     Fraudsters: 400+ claims from 2-3 IP address ranges (office?)
-     
-  4. Payment Funneling
-     Honest: Each person has own bank account
-     Fraudsters: All 500 payouts → 5 bank accounts
-     
-  5. Behavioral Cloning
-     Honest: Unique working patterns
-     Fraudsters: Identical cancellation rates, same hours
-
-Detection:
-  ├─ All 500 claims within 287 seconds → Ring detected
-  ├─ Device fingerprint similarity: 450/500 match → Cloning
-  ├─ Payment cluster: All funneling to 5 accounts → Organized
-  ├─ IP range: 300/500 from same building → Coordinated
-  └─ Action: FREEZE ALL 500 ACCOUNTS + REFER TO LAW ENFORCEMENT
-```
-
----
-
-### Confidence Scoring System
-
-```
-Base Score: 0.50 (neutral)
-
-Layer 1 (Device):
-  + Device fingerprint matches: +0.20
-  - Device fingerprint mismatch: -0.40
-  
-Layer 2 (Behavior):
-  + Normal behavior: +0.20
-  - Anomalous behavior: -0.40
-  
-Layer 3 (Platform):
-  + Attempted login during disruption: +0.15
-  + Orders offered during disruption: +0.10
-  - No login attempt: -0.25
-  - Moral hazard (working elsewhere): -0.50
-  
-Layer 4 (Location):
-  + In legitimate cluster: +0.15
-  + Normal cluster density: +0.10
-  - Abnormal density (2x expected): -0.30
-  - Impossible GPS-device distance: -0.60
-  
-Layer 5 (Network):
-  - Suspicious timing (all within 5 min): -0.20
-  - Multiple accounts to same bank: -0.30
-  - Multiple accounts from same IP: -0.25
-  - Coordinated ring detected: -0.40
-
-DECISION RULES:
-  Score ≥ 0.75: AUTO-APPROVE ✓ (5-min payout)
-  Score 0.40-0.75: MANUAL REVIEW ⚠️ (24-48 hrs)
-  Score < 0.40: AUTO-REJECT ✗ (flagged for investigation)
-```
-
----
-
-### Results Against Attack
-
-```
-Total Claims: 600
-
-Honest Claims (Legitimate Rain Event): 100
-├─ Average confidence: 0.87
-├─ Approved: 95
-└─ Payouts: ₹47,500 ✓ (protected honest workers)
-
-Fraudulent Claims (Coordinated Ring): 500
-├─ Device mismatch: 500 × -0.40 = confidence 0.10
-├─ Behavioral anomaly: 500 × -0.40 = confidence -0.30
-├─ No platform activity: 400 × -0.25 = confidence -0.55
-├─ Impossible GPS distance: 450 × -0.60 = confidence -1.15
-├─ Network ring detected: 500 × -0.40 = freeze all accounts
-├─ Rejected: 500
-└─ Prevented Fraud: ₹2,50,000 (2.5 lakh saved)
-
-Insurance Pool Protected: YES ✓
-Fraud Ring Detected: Day 1, <30 seconds after submission
-```
-
----
-
-## 8. AI/ML INTEGRATION
-
-### Premium Calculation (CatBoost Gradient Boosting)
-
-```python
-Model: CatBoost classifier
-Features:
-  ├─ City (categorical: Delhi, Mumbai, etc.)
-  ├─ Zone risk history (flood frequency, traffic)
-  ├─ Seasonal category (monsoon vs. off-season)
-  ├─ Worker rating (4.0-5.0)
-  ├─ Acceptance rate (0-100%)
-  ├─ Cancellation history (0-100%)
-  ├─ Days since signup (1-1000)
-  ├─ Delivery count (0-10,000)
-  ├─ Order completion time variability (std dev)
-  └─ GPS accuracy history (meters)
-
-Output: Risk multiplier (0.7x - 1.5x)
-
-Example:
-  Worker: Rohan
-  City: Bangalore
-  Zone: Coastal (flood-prone)
-  Rating: 4.5
-  Acceptance: 94%
-  Cancellation: 6%
-  Days active: 350
-  
-  Model predicts: Risk multiplier = 0.95
-  Premium = ₹49 × 0.95 = ₹46.55/week
-```
-
-### Fraud Detection (Isolation Forest + DBSCAN)
-
-```python
-Layer 2 Model: Isolation Forest
-  Detects anomalous user behavior
-  Anomaly score: 0-1 (threshold 0.6)
-  
-Layer 4 Model: DBSCAN Clustering
-  Identifies geographic anomalies
-  Epsilon: 2km radius
-  Min samples: 5 claims
-```
-
-### Real-Time Verification
-
-```python
-On Claim Submission:
-  1. Calculate risk score (0-1): 0.05 seconds
-  2. Run isolation forest: 0.10 seconds
-  3. Query platform API: 0.50 seconds
-  4. DBSCAN clustering: 0.15 seconds
-  5. Network analysis: 0.20 seconds
-  
-Total: <1 second from submission to decision
-
-Latency Target: 5 minutes (decision to payout)
-  - Verification: 1 second
-  - Manual review queue (if needed): 240 seconds
-  - Payment processing: 30-60 seconds
-```
-
----
-
-## 9. TECH STACK
-
-### Backend Architecture
-
-```
-Frontend:
-  ├─ React Native (mobile app)
-  │  ├─ iOS: Native Swift components for sensor access
-  │  ├─ Android: Kotlin + Google Play Services
-  │  └─ Offline-first with sync
-  └─ React (web dashboard)
-
-Backend:
-  ├─ Python FastAPI
-  │  ├─ Real-time claim processing
-  │  ├─ ML inference (CatBoost, Isolation Forest)
-  │  └─ Async task queue (Celery)
-  └─ Node.js Express
-     ├─ Payment API (Razorpay integration)
-     └─ Webhook handlers
-
-Database:
-  ├─ PostgreSQL (primary, transactions)
-  ├─ Redis (caching, real-time)
-  └─ MongoDB (logs, unstructured data)
-
-ML/AI:
-  ├─ scikit-learn (Isolation Forest)
-  ├─ CatBoost (premium calculation)
-  ├─ DBSCAN (spatial clustering)
-  └─ TensorFlow Serving (model deployment)
-
-APIs:
-  ├─ IMD Weather Data (REST API)
-  ├─ OpenWeatherMap (REST API)
-  ├─ Google Maps API (traffic, routing)
-  ├─ Razorpay (UPI payouts)
-  ├─ NPCI (bank account verification)
-  └─ Blinkit/Zepto (partner APIs, TBD)
-
-Infrastructure:
-  ├─ AWS (primary)
-  │  ├─ EC2 (backend services)
-  │  ├─ RDS (PostgreSQL)
-  │  ├─ S3 (file storage)
-  │  └─ Lambda (serverless processing)
-  └─ GCP (ML)
-     ├─ Vertex AI (model management)
-     └─ BigQuery (analytics)
-
-Security:
-  ├─ OAuth 2.0 (user authentication)
-  ├─ TLS 1.3 (data in transit)
-  ├─ AES-256 (data at rest)
-  ├─ Rate limiting (DDoS protection)
-  ├─ WAF (Web Application Firewall)
-  └─ PII encryption (Aadhaar, bank data)
-```
-
-### Development Stack
-
-```
-Version Control: Git + GitHub
-├─ Branch strategy: Git Flow
-├─ PR reviews required: 2
-└─ CI/CD: GitHub Actions
-
-Testing:
-  ├─ Unit: pytest (Python), Jest (Node)
-  ├─ Integration: TestContainer (database)
-  ├─ Load: JMeter (1000 simultaneous claims)
-  └─ Security: OWASP ZAP
-
-Monitoring:
-  ├─ Prometheus (metrics)
-  ├─ Grafana (dashboards)
-  ├─ ELK Stack (logs)
-  ├─ Sentry (error tracking)
-  └─ DataDog (APM)
-
-Documentation:
-  ├─ API: Swagger/OpenAPI
-  ├─ Architecture: C4 diagrams
-  ├─ Process: Confluence wikis
-  └─ Code: JSDoc/docstrings
-```
-
----
-
-## 10. DEVELOPMENT ROADMAP
-
-### Phase 1: Ideation & Foundation (March 4-20)
-
-**Deliverables:**
-- [x] README.md (this document)
-- [x] Adversarial defense strategy
-- [x] Persona research
-- [x] Trigger validation plan
-- [x] Tech stack decisions
-- [x] Git repository setup
-
-**Not Built Yet (Just Spec):**
-- Research notes + decision trees (logic only)
-- No code, no database, no APIs
-- Airtight logic that *could* be implemented
-
-**Submission:** March 20, 11:59 PM
-
----
-
-### Phase 2: MVP Development (Weeks 7-12)
-
-```
-Week 7-8: Backend Foundation
-  ├─ Set up FastAPI + PostgreSQL
-  ├─ Implement Razorpay integration
-  ├─ Build claim submission API
-  └─ Create confidence scoring logic
-
-Week 9-10: ML Models
-  ├─ CatBoost premium calculation
-  ├─ Isolation Forest anomaly detection
-  ├─ DBSCAN spatial clustering
-  └─ Model training on synthetic data
-
-Week 11-12: Frontend + Integration
-  ├─ React Native mobile app
-  ├─ Dashboard (React web)
-  ├─ API integration
-  ├─ Payment flow
-  └─ End-to-end testing
-
-Deliverable: Production-ready MVP
-├─ 50+ users beta test
-├─ Real claim data collection
-├─ Performance benchmarks
-└─ Security audit
-```
-
-### Phase 3: Expansion (Weeks 13-20)
-
-```
-Additional Triggers:
-  ├─ Strike/Civic Disruption
-  ├─ Fuel Price Surge
-  └─ Gridlock Duration
-
-Native Apps:
-  ├─ iOS app (App Store)
-  └─ Android app (Play Store)
-
-Partnerships:
-  ├─ Blinkit integration
-  ├─ Zepto integration
-  └─ Swiggy/Amazon (future)
-
-Analytics:
-  ├─ Dashboard for metrics
-  ├─ Rider insights
-  └─ Fraud reporting
-```
-
----
-
-## 11. WHY THIS WORKS
-
-### For Delivery Partners
-
-```
-✓ Fast: 5 minutes (vs. 30 days traditional)
-✓ Fair: Algorithm decides (no human bias)
-✓ Transparent: Know exactly why you were approved/rejected
-✓ Affordable: 1-2% of earnings (costs less than coffee)
-✓ Frequent: Disruptions happen 2-3x monthly (not once a year)
-```
-
-### For Insurance Economics
-
-```
-✓ Profitable: Premiums > Payouts at 70-80% frequency
-✓ Scalable: Automated (no human claims processing)
-✓ Defensible: Tech + ML moat (hard to copy)
-✓ Verifiable: Parametric triggers reduce claim disputes
-✓ Sustainable: Works for any city, any disruption type
-```
-
-### Against Fraud
-
-```
-✓ 5-layer defense (not just one check)
-✓ 95% fraud detection rate
-✓ <2% false positive rate (honest workers protected)
-✓ Proven against coordinated 500-person rings
-✓ Evolves with attacker sophistication (ML adapts)
-```
-
----
-
-## 12. WHAT'S NOT COVERED (Scope Boundaries)
-
-### Explicitly Out of Scope
-
-```
-❌ Health/Accident Insurance
-   ("Broken leg during rain" is accident insurance, not income loss)
-
-❌ Vehicle Repairs/Maintenance
-   ("Bike damaged" is asset insurance, not income loss)
-
-❌ Equipment Replacement
-   ("Phone broken" is device insurance, not income loss)
-
-❌ Income Replacement During Account Suspension
-   ("Banned by algorithm" needs separate legal product)
-
-❌ Subscription to Premium Gig Platforms
-   (Must work on Blinkit/Zepto; we don't insure non-users)
-```
-
-### What We Might Add Later
-
-```
-✓ Additional triggers (cold snap, traffic gridlock)
-✓ Telematics-based accident micro-insurance
-✓ Wellness incentives (mandated rest payouts)
-✓ Fleet insurance (multiple riders one policy)
-✓ Integration with government gig worker funds
-```
-
----
-
-## 13. COMPETITIVE ADVANTAGES
-
-| Aspect | Us | Traditional Insurance | Bajaj ClimateSafe | Digit Insurance |
-|--------|-----|---------------------|-------------------|-----------------|
-| **Processing Time** | 5 minutes | 30 days | 48 hours | Unknown |
-| **Claim Approval Rate** | 95%+ | 40% | 70% | 65% |
-| **Fraud Detection** | 5-layer ML | None | 1-layer | 1-layer |
-| **Pricing** | ₹29-89/week | ₹500+ month | ₹200-400/month | ₹300+/month |
-| **Transparency** | Algorithm explains | Black box | Black box | Black box |
-| **Real-time Verification** | YES (parametric) | NO (indemnity) | Partial | NO |
-| **Mobile-first** | YES (React Native) | Web forms | Web-based | Web-based |
-
----
-
-## 14. METRICS & SUCCESS
-
-### Phase 1 (March-April)
-
-```
-Research Goals:
-  ✓ Validate 3 triggers with 10+ rider interviews
-  ✓ Confirm data source availability (IMD, OpenWeatherMap)
-  ✓ Design fraud detection that defeats 500-person ring
-  ✓ Finalize tech stack (no unknowns)
-
-Success: Logic airtight, ready to code
-```
-
-### Phase 2 (May-August)
-
-```
-MVP Goals:
-  Target: 50 beta users
-  ├─ Onboarding: <5 minutes
-  ├─ First claim: <5 minutes approval
-  ├─ Monthly retention: >80%
-  ├─ NPS: >40
-  └─ Fraud detection: >90% accuracy
-
-Success: Product-market fit in beta
-```
-
-### Phase 3 (September-December)
-
-```
-Scale Goals:
-  Target: 10,000 users
-  ├─ Cost per acquisition: <₹100
-  ├─ Lifetime value: >₹2,000
-  ├─ Net promoter score: >50
-  ├─ Monthly claims processed: >50,000
-  └─ Fraud catch rate: >99%
-
-Success: Sustainable unit economics, viral adoption
-```
-
----
-
-## 15. CONCLUSION: Why Now?
-
-India's gig economy is **5 years old but still uninsured**. 
-
-Blinkit and Zepto have proven the model ($5B+ valuations), but delivery partners—the backbone of it all—remain one disruption away from financial crisis.
-
-Parametric insurance is the **only** way to:
-1. Pay workers in 5 minutes (not 30 days)
-2. Automate claims (no bureaucracy)
-3. Scale to millions (not thousands)
-4. Keep fraud out (AI moats, not human judgment)
-
-**InsureGig** brings this to India's 500,000+ delivery partners.
-
----
-
-## 16. CALL TO ACTION
-
-### To Investors/Partners
-```
-We're solving a ₹5,000+ crore annual problem (income loss during disruptions).
-
-Market:
-  ├─ 500,000 active delivery partners (Blinkit + Zepto)
-  ├─ Average ₹3,000/month vulnerability
-  ├─ TAM: ₹18,000 crore/year (uninsured)
-  └─ 80% of gig workers lack income protection
-
-Join us to build the future of gig worker financial security.
-```
-
-### To Gig Workers
-```
-You've built India's last-mile miracle. 
-
-Now it's time to protect yourself. InsureGig gives you:
-  ✓ ₹500 instantly when rain/heat hits
-  ✓ Zero paperwork
-  ✓ ₹49/week (less than a meal)
-  ✓ Join 1,000+ others already protected
-
-Get updates: [Link to community/WhatsApp]
-```
-
----
-
-## References & Data Sources
-
-- **IMD Weather Data:** imdaws.wihg.res.in
-- **CPCB Air Quality:** cpcb.nic.in
-- **Blinkit/Zepto Reports:** Industry research (TechCrunch, Inc42)
-- **Gig Worker Studies:** ILO, NITI Aayog
-- **Parametric Insurance:** Munich Re, Swiss Re whitepapers
-
----
-
-**Version:** 1.0  
-**Last Updated:** March 2025  
-**Status:** Phase 1 Submission  
-**Next Review:** Post-March 20 feedback incorporation
-
----
-
-## Git Repository Structure
-
-```
-/InsureGig-Insurance
-├── README.md (this file)
-├── /docs
-│  ├── ADVERSARIAL_DEFENSE.md
-│  ├── TRIGGER_ANALYSIS.md
-│  ├── RESEARCH_PLAN.md
-│  └── TECH_STACK.md
-├── /mockups
-│  ├── onboarding_flow.png
-│  ├── claim_dashboard.png
-│  ├── payout_confirmation.png
-│  └── fraud_detection_pipeline.png
-├── /api-specs
-│  ├── claim_submission.yaml
-│  ├── premium_calculation.yaml
-│  └── payout_processing.yaml
-└── LICENSE (MIT)
-```
-
-**Clone & explore:** `git clone [repo-link]`
+## 📋 9. Requirements for the 2-Minute Demo Video
+
+To execute the DEVTrails submission perfectly, ensure you check off these interactive flows in the UI:
+
+- [ ] **Scene 1 (Onboarding):** Register a mock Q-commerce rider (Arjun) and assign him to "Zepto Hub - Koramangala" in an **Orange Zone**.
+- [ ] **Scene 2 (AI Pricing - Model 1):** Show the dynamic premium calculation: Base ₹60 + Zone ₹24 = ₹84 subtotal. Arjun has 80% DPDT, so final = **₹100.80/week**. Navigate to the Premium Breakdown Screen.
+- [ ] **Scene 3 (The Disaster - Trigger):** Click a "Simulate Severe Flood" button on the dashboard, which POSTs a mock IMD Weather payload to the FastAPI webhook.
+- [ ] **Scene 4 (The Miracle - Model 2):** Show the React Native app instantly receive a notification: *"Trigger matched. Location verified (1.1km from epicenter). 3 hours lost at ₹120/hr. Red Zone 35% coverage applied. **₹126.00 credited to UPI.**"*
+- [ ] **Scene 5 (The Platform Oracle):** Simulate a "Zepto App Suspension" trigger and show a different rider getting an instant ₹300 payout (Green Zone, 50% coverage).
+- [ ] **Scene 6 (The Syndicate Attack - Model 3):** Simulate a push of 50 simultaneous claims and watch the Fraud Defense Engine instantly freeze them all with anomaly score > 0.6.
+- [ ] **Scene 7 (DPDT Reward):** Show how Arjun's DPDT improved from 80% to 90% next week, reducing his premium from ₹100.80 to **₹92.40**.
+
+By following this exact blueprint, your Phase 2 executable codebase won't just win a hackathon—it will literally become the Day 1 code of your funded startup.
