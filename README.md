@@ -153,8 +153,6 @@ The unique behavioral metric that rewards hardworking riders:
 
 ## 💸 7. AI Plan — Model 2: Payout Calculator
 
-> **Detailed specification:** See [`ai_model_2_spec.md`](./ai_model_2_spec.md)
-
 **Phase 2 Goal:** Demonstrate zero-touch, income-based parametric payouts with geospatial precision.
 
 ### The Formula
