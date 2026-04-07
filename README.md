@@ -19,7 +19,6 @@ We are selecting an MVP tech stack that maps perfectly 1-to-1 with your final Da
 
 ### MVP Simulation Context
 
-For the immediate Phase 2 executable codebase, this architecture simulates the following async flows:
 1. **Client Device:** React Native app posts rider registration, hub assignment, and continuous GPS to the backend.
 2. **API Layer:** FastAPI receives requests (simulating the future API Gateway).
 3. **Trigger Simulation:** FastAPI exposes secure mock Webhook endpoints for all 4 triggers (IMD Rain, IMD Heat, News NLP, Platform Suspension).
