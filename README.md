@@ -111,8 +111,6 @@ The simulated **Zepto App Suspension Payload** (The "Killer Feature"):
 
 ## 🧠 6. AI Plan — Model 1: Dynamic Premium Engine
 
-> **Detailed specification:** See [`ai_model_1_spec.md`](./ai_model_1_spec.md)
-
 **Phase 2 Goal:** Demonstrate mathematical, hyper-local weekly pricing for Q-Commerce riders.
 
 ### The Formula
