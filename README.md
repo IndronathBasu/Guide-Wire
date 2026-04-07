@@ -2,7 +2,7 @@
 
 ---
 
-## 🏗️ 1. Tech Stack (Phase 2 MVP vs. Production Upgrade)
+## 🏗️ 1. Tech Stack
 
 We are selecting an MVP tech stack that maps perfectly 1-to-1 with your final Day 90 startup stack, ensuring no throwaway code.
 
@@ -110,14 +110,6 @@ The simulated **Zepto App Suspension Payload** (The "Killer Feature"):
 
 ## 🧠 6. AI Plan — Model 1: Dynamic Premium Engine
 
-**Phase 2 Goal:** Demonstrate mathematical, hyper-local weekly pricing for Q-Commerce riders.
-
-### The Formula
-```
-Subtotal = Base Premium (₹60) + Zone Penalty (₹0 / ₹24 / ₹45)
-Final Weekly Premium = Subtotal + [ (100% - DPDT%) × Subtotal ]
-```
-
 ### Input Features
 | # | Feature | Type | Source |
 | :--- | :--- | :--- | :--- |
@@ -152,14 +144,6 @@ The unique behavioral metric that rewards hardworking riders:
 
 ## 💸 7. AI Plan — Model 2: Payout Calculator
 
-**Phase 2 Goal:** Demonstrate zero-touch, income-based parametric payouts with geospatial precision.
-
-### The Formula
-```
-Base Income Loss = (Historical Hourly Wage × Disruption Duration) × Severity Multiplier
-Final Payout = Base Income Loss × Coverage Percentage
-```
-
 ### The 4 Automated Triggers
 | # | Trigger | Category | Threshold |
 | :--- | :--- | :--- | :--- |
@@ -193,8 +177,6 @@ To protect the ₹6.45 Cr liquidity fund:
 ---
 
 ## 🛡️ 8. AI Plan — Model 3: Fraud Defense (Market Crash Engine)
-
-**Phase 2 Goal:** Prove mathematically that the ₹6.45 Cr liquidity pool is safe from exploitation.
 
 This is the crown jewel of Aegesis. The Phase 2 MVP must implement these three defense layers:
 
