@@ -1,7 +1,5 @@
 # 🚀 Aegesis
 
-This document outlines everything needed to execute the Phase 2 Minimum Viable Product (MVP) for the **Guidewire DEVTrails** hackathon. Aegesis is an **AI-Powered Parametric Insurance Platform** built exclusively for **Quick Commerce (Q-Commerce) 2-wheeler delivery partners** (Zepto / Blinkit). It is structured to allow a seamless upgrade into the commercial product described in the **Final Startup Roadmap** (Month 1 - 3).
-
 ---
 
 ## 🏗️ 1. Tech Stack (Phase 2 MVP vs. Production Upgrade)
